@@ -1,0 +1,153 @@
+
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+// --- SETTINGS - UPDATE THESE! ---
+const char* ssid = "Your Wi-Fi network name";
+const char* password = "Your Wi-Fi password"; 
+
+// Define the GPIO pin connected to the relay or LED.
+// D1 on NodeMCU is GPIO5.
+const int bulbPin = 5; 
+
+// Create a web server object on port 80
+ESP8266WebServer server(80);
+
+// Variable to store the current state of the bulb
+bool bulbState = LOW; // LOW means OFF
+
+// --- WEB PAGE HANDLERS ---
+
+// This function is called when a client requests the root URL ("/")
+void handleRoot() {
+  String html = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP8266 Bulb Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f2f2f2; }
+    h1 { color: #333; }
+    .button {
+      display: inline-block;
+      padding: 15px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      outline: none;
+      color: #fff;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 9px #999;
+      margin: 10px;
+    }
+    .button-on { background-color: #4CAF50; } /* Green */
+    .button-on:hover { background-color: #3e8e41; }
+    .button-on:active { background-color: #3e8e41; box-shadow: 0 5px #666; transform: translateY(4px); }
+    
+    .button-off { background-color: #f44336; } /* Red */
+    .button-off:hover { background-color: #da190b; }
+    .button-off:active { background-color: #da190b; box-shadow: 0 5px #666; transform: translateY(4px); }
+
+    .status { font-size: 24px; margin-top: 30px; }
+    .status-on { color: #4CAF50; }
+    .status-off { color: #f44336; }
+  </style>
+</head>
+<body>
+  <h1>Bulb Control Panel</h1>
+  <p>Control the light connected to your ESP8266.</p>
+  
+  <a href="/on" class="button button-on">Turn ON</a>
+  <a href="/off" class="button button-off">Turn OFF</a>
+
+  <div class="status">
+    The bulb is currently: 
+)rawliteral";
+
+  if (bulbState == HIGH) {
+    html += "<span class='status-on'>ON</span>";
+  } else {
+    html += "<span class='status-off'>OFF</span>";
+  }
+
+  html += R"rawliteral(
+  </div>
+</body>
+</html>
+)rawliteral";
+
+  server.send(200, "text/html", html);
+}
+
+// This function is called when a client requests "/on"
+void handleTurnOn() {
+  bulbState = HIGH; // Set state to ON
+  digitalWrite(bulbPin, bulbState);
+  Serial.println("Bulb turned ON");
+  server.sendHeader("Location", "/", true); // Redirect back to the root page
+  server.send(302, "text/plain", ""); 
+}
+
+// This function is called when a client requests "/off"
+void handleTurnOff() {
+  bulbState = LOW; // Set state to OFF
+  digitalWrite(bulbPin, bulbState);
+  Serial.println("Bulb turned OFF");
+  server.sendHeader("Location", "/", true); // Redirect back to the root page
+  server.send(302, "text/plain", "");
+}
+
+// This function is called when a client requests a page that doesn't exist
+void handleNotFound() {
+  server.send(404, "text/plain", "404: Not Found");
+}
+
+
+// --- SETUP & LOOP ---
+
+void setup() {
+  // Start Serial communication for debugging
+  Serial.begin(115200);
+  delay(10);
+
+  // Set the bulb pin as an output
+  pinMode(bulbPin, OUTPUT);
+  // Ensure the bulb is off when the ESP8266 starts
+  digitalWrite(bulbPin, LOW);
+
+  // Connect to Wi-Fi
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  // If connection is successful
+  Serial.println("");
+  Serial.println("WiFi connected!");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Define server routes
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/on", HTTP_GET, handleTurnOn);
+  server.on("/off", HTTP_GET, handleTurnOff);
+  server.onNotFound(handleNotFound);
+
+  // Start the server
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop() {
+  // Handle incoming client requests
+  server.handleClient();
+}
