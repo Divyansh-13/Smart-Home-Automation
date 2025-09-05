@@ -83,6 +83,37 @@ This project aims to simplify home automation using cost-effective and scalable 
 - API calls to Django endpoints
 - Display real-time status using Firebase listeners
 
+## 💡 ESP8266 Web Server - Bulb Controller
+
+This example demonstrates a **standalone ESP8266 web server** that allows controlling a bulb (or LED) directly from a browser without needing the Django/Firebase stack.
+
+### 🔧 Hardware Setup
+1. **ESP8266 Board** (NodeMCU or Wemos D1 Mini)  
+2. **Relay Module** (for AC bulb) OR LED with resistor  
+3. **Jumper Wires**  
+
+### ⚡ Wiring
+- **Using Relay**  
+  - ESP8266 **D1 (GPIO5)** → Relay IN pin  
+  - ESP8266 **VIN** → Relay VCC  
+  - ESP8266 **GND** → Relay GND  
+
+- **Using LED (for testing)**  
+  - ESP8266 **D1 (GPIO5)** → LED long leg (+)  
+  - LED short leg (–) → 220Ω resistor → ESP8266 **GND**  
+
+### 📲 How to Use
+1. Update Wi-Fi credentials (`ssid`, `password`) in the Arduino sketch  
+2. Set `bulbPin = D1` (GPIO5 by default)  
+3. Upload the sketch via Arduino IDE  
+4. Open **Serial Monitor** at **115200 baud** to see ESP’s IP address  
+5. Access from browser (on same Wi-Fi):  
+   - `http://<ESP_IP>/on` → Turn bulb **ON**  
+   - `http://<ESP_IP>/off` → Turn bulb **OFF**  
+   - `http://<ESP_IP>/` → Control panel with buttons  
+
+---
+
 ## 🧩 How It Works
 
 1. **User Interaction**: User opens the Android app and taps the appliance toggle
