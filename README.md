@@ -8,7 +8,7 @@
 
 <br/><br/>
 
-# Hand Gesture Controlled Smart Bulbs
+# Hand Gesture–Controlled Smart Home Automation Prototype (Two-Bulb System)
 
 ### Control two AC bulbs with hand gestures — no physical switch needed.
 ### NodeMCU ESP8266 + Dual Channel Relay + Python MediaPipe + WiFi
