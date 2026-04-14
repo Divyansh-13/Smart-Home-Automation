@@ -1,257 +1,338 @@
-# 🏠 Smart Home Automation System
+<div align="center">
 
-A Wi-Fi-based smart home automation system that allows users to remotely control electrical appliances (e.g., bulbs, fans) via an Android application. The system integrates ESP8266 microcontroller with a Django REST API backend and Firebase Realtime Database for real-time device state synchronization.
+<img src="https://img.shields.io/badge/NodeMCU-ESP8266-blue?style=for-the-badge&logo=arduino&logoColor=white"/>
+<img src="https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+<img src="https://img.shields.io/badge/MediaPipe-Hand%20Gesture-FF6F00?style=for-the-badge&logo=google&logoColor=white"/>
+<img src="https://img.shields.io/badge/OpenCV-Vision-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white"/>
+<img src="https://img.shields.io/badge/IoT-Smart%20Home-green?style=for-the-badge"/>
 
-## 📌 Table of Contents
+<br/><br/>
 
-- [Project Overview](#-project-overview)
-- [Features](#-features)
-- [System Architecture](#️-system-architecture)
-- [Hardware Components](#-hardware-components)
-- [Software Requirements](#-software-requirements)
-- [Project Setup](#️-project-setup)
+# Hand Gesture Controlled Smart Bulbs
+
+### Control two AC bulbs with hand gestures — no physical switch needed.
+### NodeMCU ESP8266 + Dual Channel Relay + Python MediaPipe + WiFi
+
+<br/>
+
+> **Show a gesture → Python detects it → HTTP request over WiFi → NodeMCU fires relay → Bulb switches**
+
+<br/>
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Overview](#-overview)
+- [System Architecture](#-system-architecture)
+- [Hardware Used](#-hardware-used)
+- [Circuit Diagram](#-circuit-diagram)
+- [Wiring Table](#-wiring-table)
+- [Gesture Map](#-gesture-map)
+- [Software Stack](#-software-stack)
+- [Project Structure](#-project-structure)
+- [Setup Guide](#-setup-guide)
 - [How It Works](#-how-it-works)
-- [Use Case Diagram](#-use-case-diagram)
-- [Team Roles & Responsibilities](#-team-roles--responsibilities)
-- [Installation Guide](#-installation-guide)
-- [API Documentation](#-api-documentation)
-- [Contributing](#-contributing)
-- [License](#-license)
-
-## 🔍 Project Overview
-
-This project aims to simplify home automation using cost-effective and scalable components. It provides users with control over home appliances through an Android app, making the home smarter and more energy-efficient. The system leverages IoT principles to create a seamless, real-time control loop between user and device.
-
-## ✨ Features
-
-- **Remote Control**: ON/OFF control of appliances via Android app
-- **Real-time Sync**: Live device status tracking and updates
-- **Secure Communication**: API-based communication with authentication
-- **Persistent State**: Firebase sync for reliable state management
-- **Scalable Design**: Cost-efficient hardware integration
-- **Modern UI**: Cross-platform interface using Jetpack Compose (Kotlin)
-- **IoT Integration**: Seamless ESP8266 microcontroller integration
-
-## 🏗️ System Architecture
-
-```
-[Android App] ⇄ [Django REST API] ⇄ [Firebase DB]
-     ↓                                    ↑
-  [HTTP Commands]       ⇄        [ESP8266 NodeMCU]
-                              ↓
-                      [Relay → Bulb/Fan]
-```
-
-## 🧰 Hardware Components
-
-| Component | Description |
-|-----------|-------------|
-| **ESP8266 NodeMCU** | Wi-Fi-enabled microcontroller |
-| **Relay Module** | Switches 220V AC appliances safely |
-| **LED/Fan/Bulb** | Electrical appliance for testing/demo |
-| **Breadboard** | For circuit prototyping |
-| **Jumper Wires** | To connect circuit components |
-| **Power Adapter** | 5V USB power supply for NodeMCU |
-
-## 💻 Software Requirements
-
-| Software/Tool | Purpose |
-|---------------|---------|
-| **Arduino IDE** | Programming the ESP8266 NodeMCU |
-| **ESP8266 Board Package** | Enables ESP support in Arduino IDE |
-| **Django (Python)** | REST API backend |
-| **Firebase Realtime DB** | Stores device state and syncs with ESP |
-| **Jetpack Compose** | Kotlin UI framework for Android App |
-| **Postman** | Testing API endpoints |
-| **Firebase Admin SDK** | Python module to access Firebase |
-
-## 🛠️ Project Setup
-
-### 1. ESP8266 Firmware
-- Install ESP8266 board in Arduino IDE
-- Connect to Wi-Fi and Firebase using Arduino code
-- Listen for ON/OFF commands from Firebase and control relay
-
-### 2. Django Backend
-- Expose APIs: `/appliance/on`, `/appliance/off`, `/status`
-- Authenticate requests and push commands to Firebase
-- Use Django REST Framework for simplicity
-
-### 3. Android App (Jetpack Compose)
-- Login or register user
-- UI buttons for each appliance (toggle state)
-- API calls to Django endpoints
-- Display real-time status using Firebase listeners
-
-## 💡 ESP8266 Web Server - Bulb Controller
-
-This example demonstrates a **standalone ESP8266 web server** that allows controlling a bulb (or LED) directly from a browser without needing the Django/Firebase stack.
-
-### 🔧 Hardware Setup
-1. **ESP8266 Board** (NodeMCU or Wemos D1 Mini)  
-2. **Relay Module** (for AC bulb) OR LED with resistor  
-3. **Jumper Wires**  
-
-### ⚡ Wiring
-- **Using Relay**  
-  - ESP8266 **D1 (GPIO5)** → Relay IN pin  
-  - ESP8266 **VIN** → Relay VCC  
-  - ESP8266 **GND** → Relay GND  
-
-- **Using LED (for testing)**  
-  - ESP8266 **D1 (GPIO5)** → LED long leg (+)  
-  - LED short leg (–) → 220Ω resistor → ESP8266 **GND**  
-
-### 📲 How to Use
-1. Update Wi-Fi credentials (`ssid`, `password`) in the Arduino sketch  
-2. Set `bulbPin = D1` (GPIO5 by default)  
-3. Upload the sketch via Arduino IDE  
-4. Open **Serial Monitor** at **115200 baud** to see ESP’s IP address  
-5. Access from browser (on same Wi-Fi):  
-   - `http://<ESP_IP>/on` → Turn bulb **ON**  
-   - `http://<ESP_IP>/off` → Turn bulb **OFF**  
-   - `http://<ESP_IP>/` → Control panel with buttons  
+- [Demo](#-demo)
+- [Future Improvements](#-future-improvements)
 
 ---
 
-## 🧩 How It Works
+## Overview
 
-1. **User Interaction**: User opens the Android app and taps the appliance toggle
-2. **API Request**: App sends a POST request to Django API with the command
-3. **Database Update**: Django pushes command to Firebase Realtime Database
-4. **Device Response**: ESP8266 listens for changes in Firebase node, reads the command
-5. **Physical Control**: ESP8266 triggers relay module to control the appliance
-6. **State Sync**: ESP8266 updates the device state back to Firebase
-7. **UI Update**: App updates UI based on Firebase real-time changes
+This project builds a **contactless smart lighting system** using computer vision and IoT hardware. A Python script running on a PC detects hand gestures in real time using **MediaPipe**. Each gesture maps to a command that is sent over **WiFi** as an HTTP request to a **NodeMCU ESP8266** board. The NodeMCU hosts a lightweight web server and controls two AC bulbs through a **dual channel relay module**.
 
-## 📊 Use Case Diagram
+No cloud. No app. Just your hand.
 
-### Actors:
-- **User** (Phone App)
-- **ESP8266** (Controller)
-- **Django Server** (API)
-- **Firebase** (State DB)
+---
 
-### Use Cases:
-- User logs in and sends command
-- Server processes and stores the command
-- ESP8266 reads from Firebase and toggles relay
-- Device state updated and reflected back in app
+## System Architecture
 
-## 👥 Team Roles & Responsibilities
-
-### 1. **Pradeep Soni** – Backend & Android Developer
-- Designed and implemented Android application with Jetpack Compose
-- Developed Django backend with RESTful API for command handling
-- Integrated Firebase Admin SDK with Django server
-
-### 2. **Divyansh Sharma** – UI/UX & Embedded Developer
-- Programmed ESP8266 to fetch and execute Firebase commands
-- Managed app-to-server communication and error handling
-- Built real-time UI using Firebase SDK
-
-## 📦 Installation Guide
-
-### Prerequisites
-- Python 3.8+
-- Arduino IDE
-- Android Studio
-- Firebase Project Setup
-
-### Backend Setup
-```bash
-# Clone the repository
-git clone <repository-url>
-cd smart-home-automation
-
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Configure Firebase credentials
-# Add your Firebase service account key to the project
-
-# Run Django server
-python manage.py runserver
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        PC / Laptop                              │
+│                                                                 │
+│   ┌──────────┐    ┌──────────────┐    ┌─────────────────────┐  │
+│   │  Webcam  │───▶│  OpenCV      │───▶│  MediaPipe          │  │
+│   │          │    │  (capture)   │    │  (hand landmarks)   │  │
+│   └──────────┘    └──────────────┘    └────────┬────────────┘  │
+│                                                │               │
+│                                    ┌───────────▼─────────────┐ │
+│                                    │  Finger counter          │ │
+│                                    │  Gesture → command map   │ │
+│                                    └───────────┬─────────────┘ │
+│                                                │               │
+│                                    ┌───────────▼─────────────┐ │
+│                                    │  HTTP GET request        │ │
+│                                    │  requests.get(ESP_IP)    │ │
+│                                    └───────────┬─────────────┘ │
+└────────────────────────────────────────────────┼───────────────┘
+                                                 │  WiFi (same network)
+                                    ┌────────────▼────────────────┐
+                                    │     NodeMCU ESP8266          │
+                                    │   ESP8266WebServer (port 80) │
+                                    │   Routes: /r1/on  /r2/on     │
+                                    │           /r1/off /r2/off    │
+                                    │           /all/on /all/off   │
+                                    └──────┬──────────┬───────────┘
+                                           │D1        │D2
+                                    ┌──────▼──────────▼───────────┐
+                                    │   Dual Channel Relay (5V)    │
+                                    │   IN1 (CH1)    IN2 (CH2)     │
+                                    └──────┬──────────┬───────────┘
+                                           │          │
+                                    ┌──────▼──┐  ┌───▼──────┐
+                                    │ Bulb 1  │  │  Bulb 2  │
+                                    │  AC     │  │  AC      │
+                                    └─────────┘  └──────────┘
 ```
 
-### ESP8266 Setup
+---
+
+## Hardware Used
+
+| Component | Specification | Purpose |
+|---|---|---|
+| **NodeMCU ESP8266** | ESP-12E, 3.3V logic, built-in WiFi | Microcontroller + web server |
+| **Dual Channel Relay Module** | 5V coil, 10A/250VAC contacts | Switch AC bulbs electronically |
+| **AC Bulb × 2** | Any standard bulb (LED/CFL) | Output — the loads being controlled |
+| **Jumper wires** | Male-to-female | Connect NodeMCU pins to relay |
+| **USB Cable** | Micro USB | Power NodeMCU + upload code |
+| **PC with Webcam** | Python 3.10, USB/built-in cam | Run gesture detection |
+| **WiFi Hotspot** | Mobile hotspot or router | Connect PC and NodeMCU |
+
+---
+
+## Circuit Diagram
+
+```
+                    ┌─────────────────────────────────────┐
+                    │         NodeMCU ESP8266              │
+                    │                                      │
+                    │  VIN  ──────────────── 5V ──────┐   │
+                    │  GND  ──────────────── GND ──┐  │   │
+                    │  D1 (GPIO5) ─────── IN1 ──┐  │  │   │
+                    │  D2 (GPIO4) ─────── IN2 ┐ │  │  │   │
+                    │                         │ │  │  │   │
+                    └─────────────────────────┼─┼──┼──┼───┘
+                                              │ │  │  │
+                               ┌──────────────┘ │  │  │
+                               │  ┌─────────────┘  │  │
+                               │  │  ┌─────────────┘  │
+                               │  │  │  ┌─────────────┘
+                               ▼  ▼  ▼  ▼
+                    ┌──────────────────────────────────────┐
+                    │       Dual Channel Relay Module       │
+                    │                                       │
+                    │  IN1   IN2   GND   VCC                │
+                    │                                       │
+                    │  ┌───────────┐   ┌───────────┐       │
+                    │  │ Relay CH1 │   │ Relay CH2 │       │
+                    │  │ COM1 NO1  │   │ COM2 NO2  │       │
+                    └──┼───┬──┬───┼───┼───┬──┬────┼───────┘
+                         │  │  │       │  │  │
+                         │  │  └──┐    │  │  └──┐
+                 LIVE ───┴──┘     │    ┴──┘     │
+                 (AC)         ┌───┘         ┌───┘
+                              │             │
+                           ┌──▼──┐       ┌──▼──┐
+                           │Bulb1│       │Bulb2│
+                           └──┬──┘       └──┬──┘
+                              │             │
+                 NEUTRAL ──────┴─────────────┘
+                 (AC, direct)
+```
+
+> **WARNING:** Always wire the AC side with the power completely disconnected. 220V is lethal. Double-check COM and NO terminals before powering on.
+
+---
+
+## 🔗 Wiring Table
+
+### DC Side — NodeMCU to Relay (safe, low voltage)
+
+| NodeMCU Pin | Wire Color | Relay Pin | Notes |
+|---|---|---|---|
+| VIN | Orange | VCC | 5V power to relay |
+| GND | Black | GND | Common ground |
+| D1 (GPIO5) | Blue | IN1 | Controls Bulb 1 |
+| D2 (GPIO4) | Green | IN2 | Controls Bulb 2 |
+
+### AC Side — Relay to Bulbs (mains voltage — wire with power OFF)
+
+| From | To | Notes |
+|---|---|---|
+| Wall LIVE | COM1 | AC live input to relay CH1 |
+| COM1 → COM2 | Jumper | Bridge live to both channels |
+| NO1 | Bulb 1 wire A | Switched live to Bulb 1 |
+| NO2 | Bulb 2 wire A | Switched live to Bulb 2 |
+| Wall NEUTRAL | Bulb 1 wire B | Direct neutral — no switch |
+| Wall NEUTRAL | Bulb 2 wire B | Direct neutral — no switch |
+
+> **Key concept:** Neutral goes directly to both bulbs. Only the LIVE wire is switched by the relay. When the relay closes, it completes the circuit and the bulb lights.
+
+---
+
+## Gesture Map
+
+| Gesture | Fingers Up | Command | Result |
+|---|---|---|---|
+| ✊ Fist | 0 | `/all/off` | Both bulbs OFF |
+| ☝️ Index only | 1 | `/r1/on` | Bulb 1 ON |
+| ✌️ Two fingers | 2 | `/r2/on` | Bulb 2 ON |
+| 🤟 Three fingers | 3 | `/all/on` | Both bulbs ON |
+| 🖐️ Open hand | 5 | `/all/on` | Both bulbs ON |
+
+> The system only sends a new command when the gesture **changes** — preventing spam requests to the NodeMCU.
+
+---
+
+## 💻 Software Stack
+
+| Layer | Technology | Version | Role |
+|---|---|---|---|
+| Gesture detection | MediaPipe | 0.10.9 | Detect 21 hand landmarks |
+| Image capture | OpenCV | 4.x | Read webcam frames |
+| HTTP client | Python requests | latest | Send commands to NodeMCU |
+| Microcontroller | Arduino (ESP8266) | latest | Web server + GPIO control |
+| Web server lib | ESP8266WebServer | built-in | Handle HTTP routes |
+| Network | WiFi (local) | — | NodeMCU ↔ PC communication |
+
+---
+
+## 📁 Project Structure
+
+```
+hand-gesture-smart-bulbs/
+│
+├── arduino/
+│   └── dual_relay_2bulb.ino      # NodeMCU web server code
+│
+├── python/
+│   └── gesture_control.py        # Hand gesture detection + HTTP control
+│
+├── assets/
+│   └── circuit_diagram.png       # Circuit wiring diagram
+│
+└── README.md
+```
+
+---
+
+## 🚀 Setup Guide
+
+### Step 1 — Flash the NodeMCU
+
+1. Install [Arduino IDE](https://www.arduino.cc/en/software)
+2. Add ESP8266 board support:
+   - Go to **File → Preferences**
+   - Add this URL to Additional Board Manager URLs:
+     ```
+     http://arduino.esp8266.com/stable/package_esp8266com_index.json
+     ```
+3. Go to **Tools → Board → Board Manager** → search `esp8266` → install
+4. Select board: **NodeMCU 1.0 (ESP-12E Module)**
+5. Open `arduino/dual_relay_2bulb.ino`
+6. Update your WiFi credentials:
+   ```cpp
+   const char* ssid     = "YOUR_WIFI_NAME";
+   const char* password = "YOUR_WIFI_PASSWORD";
+   ```
+7. Upload → open **Serial Monitor at 115200 baud**
+8. Note the IP address printed:
+   ```
+   WiFi Connected!
+   Open in browser: http://10.x.x.x
+   ```
+
+---
+
+### Step 2 — Set up Python environment
+
+```bash
+# Requires Python 3.10 — not 3.12+
+py -3.10 -m venv venv
+
+# Activate (Windows)
+venv\Scripts\activate
+
+# Install dependencies
+pip install opencv-python mediapipe==0.10.9 requests
+```
+
+---
+
+### Step 3 — Configure and run
+
+1. Open `python/gesture_control.py`
+2. Update the NodeMCU IP:
+   ```python
+   ESP_IP = "http://10.x.x.x"   # IP from Serial Monitor
+   ```
+3. Make sure your PC and NodeMCU are on the **same WiFi network**
+4. Run:
+   ```bash
+   python gesture_control.py
+   ```
+
+---
+
+### Step 4 — Test
+
+A webcam window opens. Show gestures to the camera:
+- Your hand skeleton is drawn in real time
+- Bulb status (ON/OFF) is shown at the bottom of the window
+- Press `ESC` to quit
+
+---
+
+## ⚙️ How It Works
+
+### Gesture detection
+MediaPipe returns 21 landmark coordinates for each detected hand. The script compares each fingertip Y-coordinate against its base knuckle — if the tip is higher (lower Y value) the finger is considered raised. The thumb uses X-axis comparison instead.
+
+### Command deduplication  
+The `last_command` variable stores the most recently sent command. A new HTTP request is only triggered when the gesture changes, preventing hundreds of identical requests per second flooding the NodeMCU.
+
+### NodeMCU relay logic
+Most relay modules are **active-LOW** — they trigger when the signal pin goes LOW. The code uses:
 ```cpp
-// Install required libraries in Arduino IDE:
-// - ESP8266WiFi
-// - FirebaseESP8266
-// - ArduinoJson
-
-// Upload the firmware to ESP8266
+digitalWrite(RELAY_CH1, state1 ? LOW : HIGH);
 ```
-
-### Android App Setup
-```bash
-# Open project in Android Studio
-# Add Firebase configuration file (google-services.json)
-# Build and install the APK
-```
-
-## 📋 API Documentation
-
-### Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/appliance/on` | Turn appliance ON |
-| POST | `/appliance/off` | Turn appliance OFF |
-| GET | `/status` | Get current device status |
-
-### Request/Response Examples
-
-```json
-// POST /appliance/on
-{
-  "device_id": "living_room_light",
-  "user_id": "user123"
-}
-
-// Response
-{
-  "status": "success",
-  "message": "Appliance turned ON",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
-```
-
-## 🤝 Contributing
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-
-## 🚀 Future Enhancements
-
-- Voice control integration (Google Assistant/Alexa)
-- Scheduling and automation rules
-- Energy consumption monitoring
-- Multiple user support
-- Web dashboard interface
-- Support for more device types
-
-## 📞 Support
-
-For support and questions, please contact:
-- **Pradeep Soni**: [email/contact]
-- **Divyansh Sharma**: [email/contact]
-
-## ⭐ Acknowledgments
-
-- ESP8266 Community for excellent documentation
-- Firebase team for real-time database services
-- Django REST Framework contributors
+If your relays behave inverted, swap `LOW` and `HIGH`.
 
 ---
 
-## ✅ Conclusion
+## 🔮 Future Improvements
 
-This Smart Home Automation System is a low-cost, scalable, and intuitive solution built with modern technology stacks. It bridges IoT hardware and real-time software interfaces, enabling users to securely control home appliances from anywhere. The project showcases effective integration of microcontrollers, web APIs, mobile development, and cloud databases.
+- [ ] Firebase integration for cloud control (control from anywhere)
+- [ ] Blynk mobile app dashboard
+- [ ] Add more relay channels for more appliances
+- [ ] Voice control integration with `SpeechRecognition`
+- [ ] OTA (Over The Air) firmware updates
+- [ ] Schedule-based automation (turn lights off at 10 PM)
+- [ ] MQTT protocol for faster response
 
-**Built with ❤️ by the Smart Home Team**
+---
+
+## Safety Notice
+
+This project involves **mains AC voltage (220V/110V)** which is extremely dangerous.
+
+- Always disconnect power before touching AC wiring
+- Use insulated wire for all AC connections
+- Keep AC wiring well away from the NodeMCU and relay signal side
+- Do not touch COM/NO terminals while the circuit is powered
+- If unsure, ask someone with electrical experience to help with the AC side
+
+---
+
+<div align="center">
+
+Built with NodeMCU ESP8266 + Python MediaPipe
+
+Star this repo if you found it useful!
+
+</div>
