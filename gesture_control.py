@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 import requests
 
-ESP_IP = "http://10.78.128.37"
+ESP_IP = "http://"IP CODE GIVEN BY ARDUINO""
 
 
 mp_hands = mp.solutions.hands
@@ -61,7 +61,7 @@ def get_command(finger_count):
     elif finger_count == 5: return "/all/on"
     return None
 
-# ── UI helpers ────────────────────────────────────────────
+# UI helpers ────────────────────────────────────────────
 def draw_ui(frame, gesture_name, finger_count, b1, b2):
     h, w, _ = frame.shape
 
@@ -105,7 +105,7 @@ def draw_ui(frame, gesture_name, finger_count, b1, b2):
     cv2.putText(frame, "ESC to quit", (10, h - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (100, 100, 100), 1)
 
-# ── Gesture label for display ─────────────────────────────
+# Gesture label for display ─────────────────────────────
 def gesture_label(n):
     labels = {
         0: "FIST  → ALL OFF",
@@ -117,7 +117,7 @@ def gesture_label(n):
     }
     return labels.get(n, "")
 
-# ── Main loop ─────────────────────────────────────────────
+# Main loop ─────────────────────────────────────────────
 print("=" * 40)
 print("  Gesture Control Started")
 print(f"  ESP IP: {ESP_IP}")
